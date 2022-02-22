@@ -1,15 +1,16 @@
 package handler
 
 import (
-    "encoding/json"
-    "fmt"
-    "net/http"
-    "path/filepath"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"path/filepath"
 
-    "around/service"
-    "around/model"
-    "github.com/pborman/uuid"
+	"around/model"
+	"around/service"
 
+	jwt "github.com/form3tech-oss/jwt-go"
+	"github.com/pborman/uuid"
 )
 
 var (
@@ -29,9 +30,13 @@ var (
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Println("Received one upload request")
 
+    user := r.Context().Value("user")
+    claims := user.(*jwt.Token).Claims
+    username := claims.(jwt.MapClaims)["username"]
+
     p := model.Post{
         Id:      uuid.New(),
-        User:    r.FormValue("user"),
+        User:    username.(string),
         Message: r.FormValue("message"),
     }
 
@@ -58,6 +63,9 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
     fmt.Println("Post is saved successfully.")
 }
+
+
+
 
 
 
