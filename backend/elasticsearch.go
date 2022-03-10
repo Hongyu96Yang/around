@@ -4,7 +4,7 @@ import (
     "fmt"
     "around/constants"
     "github.com/olivere/elastic/v7"
-
+    "around/util"
 )
 // a instance of ElasticsearchBackend
 var (
@@ -15,11 +15,10 @@ type ElasticsearchBackend struct {
     client *elastic.Client
 }
 // functionto intital the es
-func InitElasticsearchBackend() {
-    // like sessionfactory in heberate
+func InitElasticsearchBackend(config *util.ElasticsearchInfo) {
     client, err := elastic.NewClient(
-        elastic.SetURL(constants.ES_URL),
-        elastic.SetBasicAuth(constants.ES_USERNAME, constants.ES_PASSWORD))
+        elastic.SetURL(config.Address),
+        elastic.SetBasicAuth(config.Username, config.Password))
     if err != nil {
         panic(err)
     }
@@ -92,4 +91,13 @@ func (backend *ElasticsearchBackend) SaveToES(i interface{}, index string, id st
         BodyJson(i).
         Do(context.Background())
     return err
+}
+func (backend *ElasticsearchBackend) DeleteFromES(query elastic.Query, index string) error {
+	_, err := backend.client.DeleteByQuery().
+		Index(index).
+		Query(query).
+		Pretty(true).
+		Do(context.Background())
+
+	return err
 }
